@@ -1,3 +1,4 @@
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://industrial-predictive-maintenance-system-mefkgejrl6f6uhvbdzpx5.streamlit.app/)
 # 🛠️ Industrial Predictive Maintenance System using Explainable AI
 
 <div align="center">
