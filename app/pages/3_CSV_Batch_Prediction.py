@@ -1,52 +1,49 @@
-from styles import load_css
-import streamlit as st
+import numpy as np
 import pandas as pd
+import streamlit as st
 
+from styles import load_css
+from sidebar import render_sidebar
 from utils import model, scaler, feature_names
 
+
+# ============================================================
+# PAGE CONFIG
+# ============================================================
+
 st.set_page_config(
-    page_title="CSV Batch Prediction",
-    page_icon="📂",
+    page_title="Batch Analysis",
+    page_icon="📄",
     layout="wide"
 )
+
 load_css()
-st.sidebar.title("⚙️ Industrial Predictive Maintenance")
+render_sidebar()
 
-st.sidebar.markdown("---")
 
-st.sidebar.success("Version 1.0")
+# ============================================================
+# HEADER
+# ============================================================
 
-st.sidebar.markdown("---")
-
-st.sidebar.info(
-    """
-    **Modules**
-    
-    🏠 Home
-    
-    🛠 Manual Prediction
-    
-    📂 Batch Prediction
-    
-    📊 Analytics
-    
-    🧠 Explainability
-    
-    ℹ️ About
-    """
-)
-st.title("📂 Batch Prediction using CSV")
+st.title("Batch Analysis")
 
 st.write(
-    "Upload a CSV file containing the engine features to predict the Remaining Useful Life (RUL) for multiple engines."
+    "Upload a CSV dataset and generate Remaining Useful Life "
+    "predictions for multiple assets."
 )
 
-st.markdown("---")
+
+# ============================================================
+# UPLOAD
+# ============================================================
+
+st.header("Upload Dataset")
 
 uploaded_file = st.file_uploader(
-    "Upload CSV File",
+    "Choose a CSV file",
     type=["csv"]
 )
+
 
 if uploaded_file is not None:
 
@@ -54,118 +51,230 @@ if uploaded_file is not None:
 
         df = pd.read_csv(uploaded_file)
 
-        st.subheader("📄 Uploaded Dataset")
+        st.success("CSV loaded successfully.")
 
-        st.dataframe(df.head(), use_container_width=True)
+        # ----------------------------------------------------
+        # DATASET OVERVIEW
+        # ----------------------------------------------------
 
-        st.write(f"Rows : {df.shape[0]}")
-        st.write(f"Columns : {df.shape[1]}")
+        st.subheader("Dataset Overview")
 
-        st.markdown("---")
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            st.metric(
+                "Rows",
+                len(df)
+            )
+
+        with c2:
+            st.metric(
+                "Columns",
+                len(df.columns)
+            )
+
+        with c3:
+            st.metric(
+                "Required Features",
+                len(feature_names)
+            )
+
+
+        with st.expander("Preview Dataset"):
+
+            st.dataframe(
+                df.head(10),
+                use_container_width=True
+            )
+
+
+        # ----------------------------------------------------
+        # VALIDATION
+        # ----------------------------------------------------
 
         missing_features = [
-            feature for feature in feature_names
+            feature
+            for feature in feature_names
             if feature not in df.columns
         ]
 
         if missing_features:
 
             st.error(
-                "The following required columns are missing:"
+                "The uploaded CSV is missing required features."
             )
 
-            st.write(missing_features)
+            st.write(
+                missing_features
+            )
 
         else:
 
-            if st.button(
-                "🚀 Predict for All Engines",
+            st.success(
+                "All required model features are available."
+            )
+
+            st.divider()
+
+            run_batch = st.button(
+                "Run Batch Prediction",
+                type="primary",
                 use_container_width=True
-            ):
+            )
 
-                X = df[feature_names]
 
-                X_scaled = scaler.transform(X)
+            if run_batch:
 
-                predictions = model.predict(X_scaled)
+                try:
 
-                predictions = [max(0, value) for value in predictions]
+                    X = df[feature_names].copy()
 
-                result = df.copy()
+                    X_scaled = scaler.transform(X)
 
-                result["Predicted_RUL"] = predictions
+                    predictions = model.predict(X_scaled)
 
-                def risk_level(rul):
+                    predictions = np.asarray(
+                        predictions
+                    ).reshape(-1)
 
-                    if rul > 100:
-                        return "Low"
-
-                    elif rul > 40:
-                        return "Medium"
-
-                    return "High"
-
-                result["Risk_Level"] = result["Predicted_RUL"].apply(risk_level)
-
-                st.success("Prediction Completed Successfully!")
-
-                st.markdown("---")
-
-                st.subheader("📊 Prediction Summary")
-
-                col1, col2, col3, col4 = st.columns(4)
-
-                with col1:
-                    st.metric(
-                        "Average RUL",
-                        f"{result['Predicted_RUL'].mean():.2f}"
+                    predictions = np.maximum(
+                        predictions,
+                        0
                     )
 
-                with col2:
-                    st.metric(
-                        "Maximum RUL",
-                        f"{result['Predicted_RUL'].max():.2f}"
+                    result_df = df.copy()
+
+                    result_df["Predicted_RUL"] = predictions
+
+                    # ------------------------------------------------
+                    # RISK CLASSIFICATION
+                    # ------------------------------------------------
+
+                    def classify_risk(rul):
+
+                        if rul > 100:
+                            return "Low"
+
+                        elif rul > 40:
+                            return "Medium"
+
+                        return "High"
+
+
+                    result_df["Risk_Level"] = (
+                        result_df["Predicted_RUL"]
+                        .apply(classify_risk)
                     )
 
-                with col3:
-                    st.metric(
-                        "Minimum RUL",
-                        f"{result['Predicted_RUL'].min():.2f}"
+
+                    # ------------------------------------------------
+                    # METRICS
+                    # ------------------------------------------------
+
+                    st.header("Batch Results")
+
+                    c1, c2, c3, c4 = st.columns(4)
+
+                    with c1:
+                        st.metric(
+                            "Total Assets",
+                            len(result_df)
+                        )
+
+                    with c2:
+                        st.metric(
+                            "Average RUL",
+                            f"{result_df['Predicted_RUL'].mean():.2f}"
+                        )
+
+                    with c3:
+                        st.metric(
+                            "Maximum RUL",
+                            f"{result_df['Predicted_RUL'].max():.2f}"
+                        )
+
+                    with c4:
+                        st.metric(
+                            "Minimum RUL",
+                            f"{result_df['Predicted_RUL'].min():.2f}"
+                        )
+
+
+                    # ------------------------------------------------
+                    # RISK DISTRIBUTION
+                    # ------------------------------------------------
+
+                    st.subheader("Risk Distribution")
+
+                    risk_counts = (
+                        result_df["Risk_Level"]
+                        .value_counts()
                     )
 
-                with col4:
-                    st.metric(
-                        "Total Engines",
-                        len(result)
+                    r1, r2, r3 = st.columns(3)
+
+                    with r1:
+                        st.metric(
+                            "Low Risk",
+                            int(risk_counts.get("Low", 0))
+                        )
+
+                    with r2:
+                        st.metric(
+                            "Medium Risk",
+                            int(risk_counts.get("Medium", 0))
+                        )
+
+                    with r3:
+                        st.metric(
+                            "High Risk",
+                            int(risk_counts.get("High", 0))
+                        )
+
+
+                    st.bar_chart(
+                        risk_counts
                     )
 
-                st.markdown("---")
 
-                st.subheader("🚦 Risk Distribution")
+                    # ------------------------------------------------
+                    # RESULTS
+                    # ------------------------------------------------
 
-                risk_counts = result["Risk_Level"].value_counts()
+                    st.subheader("Prediction Results")
 
-                st.bar_chart(risk_counts)
+                    st.dataframe(
+                        result_df,
+                        use_container_width=True
+                    )
 
-                st.markdown("---")
 
-                st.subheader("📄 Prediction Results")
+                    # ------------------------------------------------
+                    # DOWNLOAD
+                    # ------------------------------------------------
 
-                st.dataframe(
-                    result,
-                    use_container_width=True
-                )
+                    csv_data = result_df.to_csv(
+                        index=False
+                    ).encode("utf-8")
 
-                csv = result.to_csv(index=False).encode("utf-8")
+                    st.download_button(
+                        "Download Prediction Results",
+                        data=csv_data,
+                        file_name="Predicted_RUL.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
 
-                st.download_button(
-                    label="⬇ Download Predictions",
-                    data=csv,
-                    file_name="Predicted_RUL.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
+
+                except Exception as e:
+
+                    st.error(
+                        f"Batch prediction failed: {e}"
+                    )
+
 
     except Exception as e:
 
-        st.error(f"Error : {e}")
+        st.error(
+            f"Unable to read CSV file: {e}"
+        )

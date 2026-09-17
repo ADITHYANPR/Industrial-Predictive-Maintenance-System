@@ -1,13 +1,17 @@
 from pathlib import Path
+
 import joblib
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 MODEL_PATH = BASE_DIR / "models" / "xgboost_model.pkl"
 SCALER_PATH = BASE_DIR / "models" / "scaler.pkl"
 
+
 model = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
+
 
 feature_names = [
     "time_in_cycles",

@@ -1,11 +1,9 @@
 streamlit
 pandas
 numpy
-matplotlib
-plotly
 scikit-learn
 xgboost
-shap
 joblib
-Pillow
-streamlit-option-menu
+shap
+matplotlib
+plotly

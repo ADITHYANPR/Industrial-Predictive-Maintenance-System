@@ -1,234 +1,283 @@
-from styles import load_css
 import streamlit as st
 
+from styles import load_css
+from sidebar import render_sidebar
+
+
+# ============================================================
+# PAGE CONFIG
+# ============================================================
+
 st.set_page_config(
-    page_title="About",
+    page_title="System Information",
     page_icon="ℹ️",
     layout="wide"
 )
+
 load_css()
-st.sidebar.title("⚙️ Industrial Predictive Maintenance")
+render_sidebar()
 
-st.sidebar.markdown("---")
 
-st.sidebar.success("Version 1.0")
+# ============================================================
+# HEADER
+# ============================================================
 
-st.sidebar.markdown("---")
+st.title("System Information")
 
-st.sidebar.info(
-    """
-    **Modules**
-    
-    🏠 Home
-    
-    🛠 Manual Prediction
-    
-    📂 Batch Prediction
-    
-    📊 Analytics
-    
-    🧠 Explainability
-    
-    ℹ️ About
-    """
+st.write(
+    "Technical overview of the Industrial Predictive "
+    "Maintenance System."
 )
-st.title("ℹ️ About This Project")
 
-st.markdown("""
-# ⚙️ Industrial Predictive Maintenance System
 
-An AI-powered predictive maintenance dashboard developed using the
-**NASA CMAPSS Turbofan Engine Degradation Dataset**.
+# ============================================================
+# PROJECT OVERVIEW
+# ============================================================
 
-This application predicts the **Remaining Useful Life (RUL)** of aircraft engines
-using Machine Learning and provides explainable predictions through SHAP.
-""")
+st.header("Project Overview")
 
-st.markdown("---")
+st.write(
+    "The Industrial Predictive Maintenance System is an "
+    "AI-powered asset health platform designed to estimate "
+    "Remaining Useful Life from industrial sensor data."
+)
 
-# ===========================================================
-# Project Objective
-# ===========================================================
+st.write(
+    "The system combines machine learning prediction, "
+    "batch analytics and explainable AI to provide a "
+    "complete predictive maintenance workflow."
+)
 
-st.header("🎯 Project Objective")
 
-st.write("""
-Unexpected equipment failures are expensive and can compromise operational safety.
+# ============================================================
+# OBJECTIVE
+# ============================================================
 
-This project aims to predict engine failures before they occur by estimating the
-Remaining Useful Life (RUL) of turbofan engines using operational settings and
-sensor measurements.
+st.header("Objective")
 
-The goal is to help industries move from reactive maintenance to predictive maintenance.
-""")
+st.write(
+    "The primary objective is to estimate the remaining "
+    "operational life of industrial equipment and transform "
+    "the prediction into understandable asset-health and "
+    "maintenance insights."
+)
 
-st.markdown("---")
 
-# ===========================================================
-# Dataset
-# ===========================================================
+# ============================================================
+# DATASET
+# ============================================================
 
-st.header("📂 Dataset")
+st.header("Dataset")
 
-st.info("""
-**NASA CMAPSS FD001 Dataset**
+c1, c2, c3 = st.columns(3)
 
-The dataset contains simulated turbofan engine degradation data.
+with c1:
+    st.metric(
+        "Dataset",
+        "NASA C-MAPSS"
+    )
 
-Features include:
+with c2:
+    st.metric(
+        "Subset",
+        "FD001"
+    )
 
-• Time in Cycles
+with c3:
+    st.metric(
+        "Task",
+        "RUL Prediction"
+    )
 
-• 3 Operational Settings
 
-• 21 Sensor Measurements
+# ============================================================
+# MODEL INTELLIGENCE
+# ============================================================
 
-Target Variable:
+st.header("Model Intelligence")
 
-Remaining Useful Life (RUL)
-""")
+c1, c2 = st.columns(2)
 
-st.markdown("---")
+with c1:
 
-# ===========================================================
-# Workflow
-# ===========================================================
+    with st.container(border=True):
 
-st.header("⚙️ Machine Learning Workflow")
+        st.subheader("XGBoost")
 
-st.markdown("""
-1. Data Collection
-2. Data Understanding
-3. Exploratory Data Analysis
-4. Data Preprocessing
-5. Feature Engineering
-6. Model Training
-7. Model Evaluation
-8. Explainable AI (SHAP)
-9. Streamlit Deployment
-""")
+        st.write(
+            "Primary production model used by the deployed "
+            "prediction workflow."
+        )
 
-st.markdown("---")
+        st.metric(
+            "R²",
+            "0.7184"
+        )
 
-# ===========================================================
-# Technologies
-# ===========================================================
+        st.metric(
+            "RMSE",
+            "35.8687 cycles"
+        )
 
-st.header("🛠️ Technologies Used")
 
-col1, col2, col3 = st.columns(3)
+with c2:
 
-with col1:
+    with st.container(border=True):
 
-    st.markdown("""
-### Programming
+        st.subheader("TCN")
 
-- Python
-- Pandas
-- NumPy
-""")
+        st.write(
+            "Temporal Convolutional Network developed as an "
+            "experimental temporal benchmark."
+        )
 
-with col2:
+        st.metric(
+            "R²",
+            "0.4067"
+        )
 
-    st.markdown("""
-### Machine Learning
+        st.metric(
+            "RMSE",
+            "42.0461 cycles"
+        )
 
-- XGBoost
-- Scikit-learn
-- SHAP
-""")
 
-with col3:
+# ============================================================
+# EXPLAINABILITY
+# ============================================================
 
-    st.markdown("""
-### Deployment
+st.header("Explainable AI")
 
-- Streamlit
-- Plotly
-- Joblib
-""")
+st.write(
+    "SHAP is integrated into the platform to provide "
+    "global feature importance and individual prediction "
+    "explanations for the XGBoost model."
+)
 
-st.markdown("---")
 
-# ===========================================================
-# Folder Structure
-# ===========================================================
+# ============================================================
+# WORKFLOW
+# ============================================================
 
-st.header("📁 Project Structure")
+st.header("System Workflow")
 
-st.code("""
-Industrial-Predictive-Maintenance-System/
+workflow = [
+    "Data Collection",
+    "Preprocessing",
+    "Feature Engineering",
+    "Model Training",
+    "RUL Prediction",
+    "Risk Classification",
+    "SHAP Explainability",
+    "Analytics"
+]
 
-├── app/
-├── data/
-├── models/
-├── notebooks/
-├── reports/
-├── images/
-├── README.md
-└── requirements.txt
-""")
+for index, step in enumerate(
+    workflow,
+    start=1
+):
 
-st.markdown("---")
+    st.write(
+        f"**{index}. {step}**"
+    )
 
-# ===========================================================
-# Features
-# ===========================================================
 
-st.header("✨ Features")
+# ============================================================
+# TECHNOLOGY STACK
+# ============================================================
 
-st.success("""
-✔ Manual Prediction
+st.header("Technology Stack")
 
-✔ Batch CSV Prediction
+c1, c2, c3, c4 = st.columns(4)
 
-✔ Analytics Dashboard
+with c1:
+    st.subheader("Python")
+    st.caption("Data processing and ML")
 
-✔ SHAP Explainability
+with c2:
+    st.subheader("XGBoost")
+    st.caption("Primary RUL model")
 
-✔ Download Prediction Results
+with c3:
+    st.subheader("SHAP")
+    st.caption("Model explainability")
 
-✔ Interactive Charts
+with c4:
+    st.subheader("Streamlit")
+    st.caption("Interactive platform")
 
-✔ Industrial Dashboard
-""")
 
-st.markdown("---")
+# ============================================================
+# PLATFORM CAPABILITIES
+# ============================================================
 
-# ===========================================================
-# Future Improvements
-# ===========================================================
+st.header("Platform Capabilities")
 
-st.header("🚀 Future Scope")
+capabilities = [
+    "Single-asset RUL prediction",
+    "CSV batch prediction",
+    "Asset risk classification",
+    "Fleet analytics",
+    "SHAP global explanations",
+    "SHAP individual explanations",
+    "Prediction result export",
+    "Experimental TCN benchmark"
+]
 
-st.markdown("""
-- Deep Learning Models (LSTM)
-- Real-time IoT Sensor Integration
-- Cloud Deployment (AWS/Azure)
-- REST API Integration
-- Predictive Maintenance Scheduling
-- Automated Alert System
-- Live Sensor Monitoring Dashboard
-""")
+for capability in capabilities:
 
-st.markdown("---")
+    st.write(
+        f"✓ {capability}"
+    )
 
-# ===========================================================
-# Developer
-# ===========================================================
 
-st.header("👨‍💻 Developer")
+# ============================================================
+# ARCHITECTURE
+# ============================================================
 
-st.write("""
-**Project:** Industrial Predictive Maintenance System
+st.header("Platform Architecture")
 
-Developed as an end-to-end Machine Learning project for predictive maintenance,
-model explainability, and deployment using Streamlit.
-""")
+st.code(
+    """
+Industrial Sensor Data
+        ↓
+Data Preprocessing
+        ↓
+Feature Engineering
+        ↓
+XGBoost RUL Prediction
+        ↓
+Asset Health & Risk
+        ↓
+Analytics Dashboard
+        ↓
+SHAP Explainability
+    """,
+    language="text"
+)
 
-st.markdown("---")
+
+# ============================================================
+# ROADMAP
+# ============================================================
+
+st.header("Future Platform Direction")
+
+st.write(
+    "The current asset-level intelligence layer is designed "
+    "as the foundation for future fleet-level predictive "
+    "analytics, real-time monitoring, APIs, event streaming "
+    "and digital-twin capabilities."
+)
+
+
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.divider()
 
 st.caption(
-    "© 2026 Industrial Predictive Maintenance System | "
-    "Built with ❤️ using Streamlit, XGBoost & SHAP"
+    "Industrial Predictive Maintenance System | "
+    "Version 1.1"
 )
